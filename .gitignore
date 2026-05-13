@@ -1,0 +1,66 @@
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Environment variables
+.env
+.env.*
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python packaging
+build/
+dist/
+*.egg-info/
+
+# Logs
+*.log
+
+# SQLite databases
+*.db
+
+# Pytest
+.pytest_cache/
+
+# Mypy
+.mypy_cache/
+
+# Ruff
+.ruff_cache/
+
+# Coverage
+.coverage
+htmlcov/
+
+# Temporary files
+temp/
+tmp/
+
+# LangChain / Vector DB data
+chroma/
+faiss_index/
+vectorstore/
+
+# Secrets / API keys
+secrets.toml
+
+# Ignore local data files if large
+data/raw/
+data/processed/
+
+# Ignore notebook outputs (optional)
+*.nbconvert.ipynb
