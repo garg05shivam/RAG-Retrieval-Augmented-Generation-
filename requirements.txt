@@ -1,3 +1,4 @@
+gradio==6.14.0
 langchain
 langchain-core
 langchain-community
@@ -10,3 +11,4 @@ chromadb
 langchain-groq
 python-dotenv
 scikit-learn
+numpy
