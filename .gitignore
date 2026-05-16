@@ -32,6 +32,8 @@ dist/
 
 # SQLite databases
 *.db
+*.sqlite
+*.sqlite3
 
 # Pytest
 .pytest_cache/
@@ -54,6 +56,7 @@ tmp/
 chroma/
 faiss_index/
 vectorstore/
+data/vector_store/
 
 # Secrets / API keys
 secrets.toml
