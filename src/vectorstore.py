@@ -19,15 +19,18 @@ class FaissVectorStore:
         self.chunk_overlap = chunk_overlap
         print(f"[INFO] Loaded embedding model: {embedding_model}")
 
-    def build_from_documents(self, documents: List[Any]):
+    def build_from_documents(self, documents: List[Any], save: bool = True):
         print(f"[INFO] Building vector store from {len(documents)} raw documents...")
         emb_pipe = EmbeddingPipeline(model_name=self.embedding_model, chunk_size=self.chunk_size, chunk_overlap=self.chunk_overlap)
         chunks = emb_pipe.chunk_documents(documents)
         embeddings = emb_pipe.embed_chunks(chunks)
         metadatas = [{"text": chunk.page_content} for chunk in chunks]
         self.add_embeddings(np.array(embeddings).astype('float32'), metadatas)
-        self.save()
-        print(f"[INFO] Vector store built and saved to {self.persist_dir}")
+        if save:
+            self.save()
+            print(f"[INFO] Vector store built and saved to {self.persist_dir}")
+        else:
+            print("[INFO] Temporary vector store built in memory.")
 
     def add_embeddings(self, embeddings: np.ndarray, metadatas: List[Any] = None):
         dim = embeddings.shape[1]
@@ -58,6 +61,8 @@ class FaissVectorStore:
         D, I = self.index.search(query_embedding, top_k)
         results = []
         for idx, dist in zip(I[0], D[0]):
+            if idx < 0:
+                continue
             meta = self.metadata[idx] if idx < len(self.metadata) else None
             results.append({"index": idx, "distance": dist, "metadata": meta})
         return results

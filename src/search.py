@@ -1,5 +1,7 @@
 import os
+import tempfile
 from dotenv import load_dotenv
+from langchain_community.document_loaders import PyPDFLoader
 from src.vectorstore import FaissVectorStore
 from langchain_groq import ChatGroq
 from src.data_loader import load_all_documents
@@ -25,11 +27,45 @@ class RAGSearch:
 
     def search_and_summarize(self, query: str, top_k: int = 5) -> str:
         results = self.vectorstore.query(query, top_k=top_k)
+        return self._summarize_results(query, results)
+
+    def search_uploaded_pdf(self, pdf_path: str, query: str, top_k: int = 5) -> str:
+        if not pdf_path:
+            return "Please upload a PDF or ask a question from the default documents."
+
+        loader = PyPDFLoader(pdf_path)
+        documents = loader.load()
+        if not documents:
+            return "I could not read any text from this PDF."
+
+        with tempfile.TemporaryDirectory() as persist_dir:
+            vectorstore = FaissVectorStore(
+                persist_dir=persist_dir,
+                embedding_model=self.vectorstore.embedding_model,
+                chunk_size=self.vectorstore.chunk_size,
+                chunk_overlap=self.vectorstore.chunk_overlap,
+            )
+            vectorstore.build_from_documents(documents, save=False)
+            results = vectorstore.query(query, top_k=top_k)
+
+        return self._summarize_results(query, results)
+
+    def _summarize_results(self, query: str, results) -> str:
         texts = [r["metadata"].get("text", "") for r in results if r["metadata"]]
         context = "\n\n".join(texts)
         if not context:
             return "No relevant documents found."
-        prompt = f"""Summarize the following context for the query: '{query}'\n\nContext:\n{context}\n\nSummary:"""
+        prompt = f"""You are a document question-answering assistant.
+Answer the query using only the provided context.
+If the context does not contain the answer, say: "I could not find relevant information in the provided documents."
+
+Query:
+{query}
+
+Context:
+{context}
+
+Answer:"""
         response = self.llm.invoke(prompt)
         return response.content
 
